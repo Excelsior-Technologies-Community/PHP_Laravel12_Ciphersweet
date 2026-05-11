@@ -21,10 +21,17 @@ class SecureContact extends Model implements CipherSweetEncrypted
     public static function configureCipherSweet(EncryptedRow $encryptedRow): void
     {
         $encryptedRow
+
             ->addField('email')
-            ->addBlindIndex('email', new BlindIndex('email_index'))
+            ->addBlindIndex(
+                'email',
+                new BlindIndex('email_index')
+            )
 
             ->addField('phone')
-            ->addBlindIndex('phone', new BlindIndex('phone_index'));
+            ->addBlindIndex(
+                'phone',
+                new BlindIndex('phone_index')
+            );
     }
 }

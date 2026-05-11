@@ -3,7 +3,7 @@
 
 <head>
 
-    <title>Add Secure Contact</title>
+    <title>Edit Secure Contact</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -53,11 +53,6 @@
             border-radius:6px;
         }
 
-        input:focus{
-            outline:none;
-            border-color:#667eea;
-        }
-
         button{
             width:100%;
             background:#667eea;
@@ -81,13 +76,6 @@
             color:#667eea;
         }
 
-        .error{
-            color:red;
-            font-size:13px;
-            margin-top:-12px;
-            margin-bottom:10px;
-        }
-
     </style>
 
 </head>
@@ -96,50 +84,42 @@
 
 <div class="card">
 
-    <h2>🔐 Add Secure Contact</h2>
+    <h2>✏ Edit Secure Contact</h2>
 
-    <form method="POST" action="{{ route('contacts.store') }}">
+    <form
+        method="POST"
+        action="{{ route('contacts.update',$contact->id) }}"
+    >
 
         @csrf
+        @method('PUT')
 
         <label>Name</label>
 
         <input
             type="text"
             name="name"
-            value="{{ old('name') }}"
+            value="{{ $contact->name }}"
         >
-
-        @error('name')
-            <div class="error">{{ $message }}</div>
-        @enderror
 
         <label>Email</label>
 
         <input
             type="email"
             name="email"
-            value="{{ old('email') }}"
+            value="{{ $contact->email }}"
         >
-
-        @error('email')
-            <div class="error">{{ $message }}</div>
-        @enderror
 
         <label>Phone</label>
 
         <input
             type="text"
             name="phone"
-            value="{{ old('phone') }}"
+            value="{{ $contact->phone }}"
         >
 
-        @error('phone')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
         <button type="submit">
-            Save Contact
+            Update Contact
         </button>
 
     </form>
