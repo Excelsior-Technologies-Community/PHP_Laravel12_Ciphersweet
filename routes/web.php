@@ -3,6 +3,20 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SecureContactController;
 
-Route::get('/', [SecureContactController::class,'index'])->name('contacts.index');
-Route::get('/create',[SecureContactController::class,'create'])->name('contacts.create');
-Route::post('/store',[SecureContactController::class,'store'])->name('contacts.store');
+Route::get('/', [SecureContactController::class, 'index'])
+    ->name('contacts.index');
+
+Route::get('/create', [SecureContactController::class, 'create'])
+    ->name('contacts.create');
+
+Route::post('/store', [SecureContactController::class, 'store'])
+    ->name('contacts.store');
+
+Route::get('/edit/{id}', [SecureContactController::class, 'edit'])
+    ->name('contacts.edit');
+
+Route::put('/update/{id}', [SecureContactController::class, 'update'])
+    ->name('contacts.update');
+
+Route::delete('/delete/{id}', [SecureContactController::class, 'destroy'])
+    ->name('contacts.delete');
