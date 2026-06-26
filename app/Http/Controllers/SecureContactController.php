@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SecureContact;
+use ZipArchive;
 
 class SecureContactController extends Controller
 {
@@ -11,17 +12,14 @@ class SecureContactController extends Controller
     {
         $query = SecureContact::query();
 
-        // Search by name (plain text)
         if ($request->filled('search_name')) {
             $query->where('name', 'like', '%' . $request->search_name . '%');
         }
 
-        // Search by email (using hash for exact match)
         if ($request->filled('search_email')) {
             $query->searchByEmail($request->search_email);
         }
 
-        // Search by phone (using hash for exact match)
         if ($request->filled('search_phone')) {
             $query->searchByPhone($request->search_phone);
         }
@@ -80,7 +78,7 @@ class SecureContactController extends Controller
 
         try {
             $contact = SecureContact::findOrFail($id);
-            
+
             $contact->update([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -115,13 +113,17 @@ class SecureContactController extends Controller
                 ->with('error', 'Failed to delete contact: ' . $e->getMessage());
         }
     }
-    
-    public function export()
+
+    public function export(Request $request)
     {
+        $request->validate([
+            'password' => 'required|string|min:6'
+        ]);
+
         $contacts = SecureContact::all();
-        
-        return response()->json([
-            'exported_at' => now(),
+
+        $payload = [
+            'exported_at' => now()->toIso8601String(),
             'total_contacts' => $contacts->count(),
             'contacts' => $contacts->map(function ($contact) {
                 return [
@@ -129,9 +131,29 @@ class SecureContactController extends Controller
                     'name' => $contact->name,
                     'email' => $contact->email,
                     'phone' => $contact->phone,
-                    'created_at' => $contact->created_at
+                    'created_at' => $contact->created_at,
                 ];
-            })
-        ]);
+            }),
+        ];
+
+        $jsonContent = json_encode($payload, JSON_PRETTY_PRINT);
+
+        $fileName = 'contacts_export_' . now()->format('Ymd_His') . '.zip';
+        $tmpPath = storage_path('app/tmp_exports');
+
+        if (!is_dir($tmpPath)) {
+            mkdir($tmpPath, 0700, true);
+        }
+
+        $zipPath = $tmpPath . '/' . $fileName;
+
+        $zip = new ZipArchive();
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $zip->setPassword($request->password);
+        $zip->addFromString('contacts.json', $jsonContent);
+        $zip->setEncryptionName('contacts.json', ZipArchive::EM_AES_256);
+        $zip->close();
+
+        return response()->download($zipPath, $fileName)->deleteFileAfterSend(true);
     }
 }
